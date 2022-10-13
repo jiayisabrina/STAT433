@@ -1,0 +1,42 @@
+---
+title: "HW2"
+output: html_document
+---
+# What time of day should you fly if you want to avoid delays as much as possible? Does this choice depend on anything? Season? Weather? Airport? Airline? Find three patterns (“null results” are ok!). Write your results into Rmarkdown. Include a short introduction that summarizes the three results. Then, have a section for each finding. Support each finding with data summaries and visualizations. Include your code when necessary. This shouldn’t be long, but it might take some time to find the things you want to talk about and lay them out in an orderly way.
+
+
+```{r setup, include=FALSE}
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+
+library(nycflights13)
+
+confirmed <- flights %>% 
+  filter(!is.na(dep_delay), !is.na(arr_delay))
+
+airline <- confirmed %>% 
+              filter(arr_delay>0) %>%
+              group_by(origin) %>% 
+              arrange(desc(arr_delay))%>%
+              summarise(delay = mean(arr_delay, na.rm=TRUE), n = n())
+
+flight_average <- flights %>%
+  filter(arr_delay>0)
+```
+
+```{r}
+#Month
+ggplot(flight_average, aes(x=reorder(x = month,arr_delay),y = arr_delay),fill = month, colour = month) +    geom_boxplot()+ggtitle("Avoid Delay by Airports")+ coord_flip(ylim = c(0,1000)) + labs(y="month", x="Average Delay(min)")
+```
+
+```{r}
+#Airline
+ggplot(flight_average , aes(x=reorder(x = carrier,arr_delay),y = arr_delay),fill = carrier, colour = carrier) +    geom_boxplot()+ggtitle("Avoid Delay by Airline")+ coord_flip(ylim = c(0,1000)) + labs(y="Carrier", x="Average Delay(min)")
+```
+
+```{r}
+#month
+ggplot(flight_average , aes(x=reorder(x = month,arr_delay),y = arr_delay),fill = month, colour = month) +    geom_boxplot()+ggtitle("Avoid Delay by month ")+ coord_flip(ylim = c(0,1000)) + labs(y="month", x="Average Delay(min)")
+```
+

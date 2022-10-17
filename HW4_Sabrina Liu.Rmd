@@ -1,0 +1,56 @@
+---
+title: "HW3_Sabrina Liu"
+output: html_document
+---
+
+```{r}
+library(nycflights13)
+library(ggplot2)
+library(dplyr)
+
+flights
+```
+
+#1. Compute the average delay by destination, then join on the airports data frame so you can show the spatial distribution of delays. Here’s an easy way to draw a map of the United States:
+```{r}
+flights %>% 
+  group_by(dest) %>% 
+  summarize(mean_arr_delay = mean(arr_delay,na.rm=T))  %>%
+  inner_join(airports, by = c(dest = "faa")) %>% 
+  ggplot(aes(lon, lat, colour = mean_arr_delay)) +
+    borders("state") +
+    geom_point() +
+    coord_quickmap()
+```
+
+#2. Add the location of the origin and destination (i.e. the lat and lon) to flights:
+```{r}
+flights %>%
+  select(year:hour, day, origin, dest) %>%
+  left_join(
+    airports %>%
+  select(faa, lat, lon),
+    by = c("origin" = "faa")
+  ) %>%
+  left_join(
+    airports %>%
+  select(faa, lat, lon),
+    by = c("dest" = "faa")
+  )
+```
+
+#3. Is there a relationship between the age of a plane and its delays?
+```{r}
+flights %>% 
+  mutate(tot_delay = arr_delay + dep_delay) %>%
+  group_by(tailnum) %>%
+  summarize(mean_arr_delay = mean(arr_delay,na.rm=T)) %>% 
+  left_join(select(planes, tailnum, year), by = "tailnum") %>%
+  mutate(year = 2013 - year) %>%
+  ggplot(aes(y = year, x = mean_arr_delay)) + 
+  geom_point() + 
+  geom_line()+
+  geom_smooth()
+```
+
+
